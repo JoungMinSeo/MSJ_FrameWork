@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="memberMapper">
+	<!-- mapper태그 namespace 속성 
+		mapper 파일들을 구분하지 위한 별칭
+	 -->
+	 
+	 <!-- resultMap : 조회된 Result Set의 컬럼명과 VO 필드명이 일치하지 않을 때
+	 				  컬럼과 필드를 매핑 시키는 역할을 하는 태그
+	 				  
+	 	type : 매핑시킬 VO 풀네임(패키지+클래스명) 또는 등록된 별칭
+	 	
+	 	id : resultMap을 구분하는 문자열
+	  -->
+	 <resultMap type="Member" id="member_rm">
+	 	<!-- 기본키(PK)에 해당하는 컬럼, 필드 매핑 -->
+	 	<id property="memberNo" column="MEMBER_NO"/>
+	 	
+	 	<!-- 기본키 외의 컬럼, 필드 매핑 -->
+	 	<result property="memberId" column="MEMBER_ID"/>
+	 	<result property="memberPw" column="MEMBER_PW"/>
+ 		<result property="memberName" column="MEMBER_NM"/>
+ 		<result property="memberPhone" column="MEMBER_PHONE"/>
+ 		<result property="memberEmail" column="MEMBER_EMAIL"/>
+ 		<result property="memberAddress" column="MEMBER_ADDR"/>
+ 		<result property="enrollDate" column="ENROLL_DATE"/>
+ 		<result property="memberStatus" column="MEMBER_STATUS"/>
+ 		<result property="memberGrade" column="MEMBER_GRADE"/>	 
+	 </resultMap>
+	 
+	 
+	<!-- 로그인 -->
+	<!-- parameterType : 전달받은 데이터의 자료형 -->
+	<!-- resultMap : 조회 결과 컬럼명과 VO 필드명이 다를 때 이를 매핑하는데 사용하는 태그 id -->
+	<select id="login" parameterType="string" resultMap="member_rm">
+		SELECT * FROM MEMBER
+		WHERE MEMBER_STATUS = 'Y'
+		AND MEMBER_ID = #{memberId}
+	</select>
+  
+  
+  	<!-- 아이디 중복 검사 -->
+  	<!--  resultType : 조회 결과가 어떤 자료형인지 지정  -->
+  	<!--  int 자료형 별칭 :  _int 
+  		  Integer 자료형 별칭 : int
+  	-->
+  	<select id="idDupCheck"  parameterType="string"  resultType="_int" >
+  		SELECT COUNT(*) FROM MEMBER
+  		WHERE MEMBER_STATUS = 'Y'
+  		AND MEMBER_ID = #{id}
+  	</select>
+  
+  
+  	<!-- 회원 가입 -->
+  	<!-- 원래 Member 타입 지정 시 패키지명 까지 다 써야되나 너무 길다!!
+  		 그래서 mybatis-config.xml 파일에 typeAlias를 지정해 별칭을 만들어 사용한다!
+  	<insert id="signUp" parameterType="edu.kh.fin.member.model.vo.Member" > -->
+  	
+  	<!-- parameterType="Member" 처럼 객체를 매개변수로 받은 경우
+  		내부에서는 #{필드명} 형식으로 사용할 수 있다. -->
+  	<insert id="signUp" parameterType="Member" >
+  		INSERT INTO MEMBER 
+  		VALUES( SEQ_MNO.NEXTVAL, #{memberId}, #{memberPw}, #{memberName}, 
+  				#{memberPhone}, #{memberEmail}, #{memberAddress}, 
+  				DEFAULT, DEFAULT, DEFAULT)
+  	</insert>
+  	
+  	<!-- insert, update, delete의 결과는 항상 int(성공한 행의 개수) 이므로
+  		별도로 resultType을 작성하지 않는다.
+  	 -->
+  
+  
+  	<!-- 회원 정보 수정 -->
+  	<update id="updateMember"  parameterType="Member">
+  		UPDATE MEMBER SET
+  		MEMBER_EMAIL = #{memberEmail},
+  		MEMBER_PHONE = #{memberPhone},
+  		MEMBER_ADDR = #{memberAddress}
+  		WHERE MEMBER_NO = #{memberNo}
+  	</update>
+  
+  <!-- 회원 비밀번호 조회 -->
+  <select id="selectPassword" parameterType="_int" resultType="string">
+  	SELECT MEMBER_PW FROM MEMBER
+  	WHERE MEMBER_NO = #{memberNo}
+  </select>
+  
+  
+  <!-- 회원 비밀번호 변경 -->
+  <update id="changePwd" parameterType="Member">
+  	UPDATE MEMBER SET
+  	MEMBER_PW = #{memberPw}
+  	WHERE MEMBER_NO = #{memberNo}
+  </update>
+  
+  
+  <!-- 회원 탈퇴 -->
+  <update id="secession" parameterType="_int">
+  	UPDATE MEMBER SET
+  	MEMBER_STATUS = 'N'
+  	WHERE MEMBER_NO = #{memberNo}
+  </update>
+  
+  
+  
+  
+  
+  
+  
+  
+</mapper>
